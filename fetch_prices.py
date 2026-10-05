@@ -31,7 +31,13 @@ async def main():
                     if popular: pop.add(c["id"])
         except Exception as e:
             errs.append(f"{label}: {e}")
-    async with FutbinClient() as cl:
+    headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://www.futbin.com/"
+}
+
+async with FutbinClient(headers=headers) as c:
         await take("populaires", lambda: cl.get_popular_players(), True)
         await take("nouveaux", lambda: cl.get_latest_players())
         await take("totw", lambda: cl.get_totw())
