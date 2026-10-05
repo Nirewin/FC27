@@ -241,15 +241,15 @@
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="px-4 py-2 font-medium text-slate-200">
               <div class="flex items-center gap-3">
-                <div class="relative w-9 h-12 flex-shrink-0 flex items-center justify-center">
+                <div class="relative w-12 h-14 flex-shrink-0 flex items-center justify-center">
                   <img 
-                    src="${card.img}" 
+                    src="https://cdn.futbin.com/content/fut25/players/${card.id}.png" 
                     alt="${card.name}" 
-                    class="w-9 h-12 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-30 transform-gpu cursor-pointer drop-shadow-md"
-                    onerror="this.onerror=null; this.src='https://cdn.futbin.com/content/fut25/players/${card.id}.png';"
+                    class="w-12 h-14 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-50 transform-gpu cursor-pointer drop-shadow-md"
+                    loading="lazy"
                   />
                 </div>
-                <span class="font-semibold text-slate-100">${card.name}</span>
+                <span class="font-semibold text-slate-100 whitespace-nowrap">${card.name}</span>
               </div>
             </td>
             <td class="px-4 py-3 font-semibold text-slate-100">${card.price.toLocaleString('fr-FR')} cr</td>
