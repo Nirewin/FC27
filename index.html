@@ -290,4 +290,10 @@
     }
 
     document.getElementById('search-input').addEventListener('input', renderTable);
-    document.getElementById('budget
+    document.getElementById('budget-filter').addEventListener('change', renderTable);
+
+    loadPrices();
+    setInterval(loadPrices, 20000);
+  </script>
+</body>
+</html>
