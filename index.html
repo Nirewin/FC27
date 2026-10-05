@@ -71,19 +71,32 @@
     <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-800/60 text-slate-400 uppercase text-xs font-semibold border-b border-slate-800">
+          <thead class="bg-slate-800/60 text-slate-400 uppercase text-xs font-semibold border-b border-slate-800 select-none">
             <tr>
-              <th class="px-4 py-3">Joueur</th>
-              <th class="px-4 py-3">Prix Actuel</th>
-              <th class="px-4 py-3">Prix d'Achat Cible</th>
-              <th class="px-4 py-3">Revente Conseillée</th>
+              <th onclick="sortData('name')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Joueur <span id="sort-icon-name" class="text-slate-600 text-xs ml-1">⇅</span>
+              </th>
+              <th onclick="sortData('price')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Prix Actuel <span id="sort-icon-price" class="text-slate-600 text-xs ml-1">⇅</span>
+              </th>
+              <th onclick="sortData('change')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Tendance 24h <span id="sort-icon-change" class="text-slate-600 text-xs ml-1">⇅</span>
+              </th>
+              <th onclick="sortData('buyPrice')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Achat Cible <span id="sort-icon-buyPrice" class="text-slate-600 text-xs ml-1">⇅</span>
+              </th>
+              <th onclick="sortData('sellPrice')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Revente Conseillée <span id="sort-icon-sellPrice" class="text-slate-600 text-xs ml-1">⇅</span>
+              </th>
               <th class="px-4 py-3">Taxe EA (5%)</th>
-              <th class="px-4 py-3">Bénéfice Net</th>
+              <th onclick="sortData('profit')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+                Bénéfice Net <span id="sort-icon-profit" class="text-indigo-400 text-xs ml-1">▼</span>
+              </th>
             </tr>
           </thead>
           <tbody id="player-table-body" class="divide-y divide-slate-800/50">
             <tr>
-              <td colspan="6" class="px-4 py-8 text-center text-slate-500">Chargement des données...</td>
+              <td colspan="7" class="px-4 py-8 text-center text-slate-500">Chargement des données...</td>
             </tr>
           </tbody>
         </table>
@@ -93,21 +106,34 @@
 
   <script>
     let allCards = [];
+    let currentSort = { column: 'profit', dir: 'desc' };
 
     async function loadPrices() {
       try {
-        const response = await fetch('data/prices.json');
+        const response = await fetch('data/prices.json?t=' + Date.now());
         if (!response.ok) throw new Error("Fichier introuvable");
         const data = await response.json();
 
-        // Supporte les 2 structures de données
         allCards = (data.cards || []).map(card => {
           const rawName = card.name || card.n || (card.c ? card.c.n : "Joueur inconnu");
           const rawPrice = card.price || card.p || (card.c ? card.c.p : 0);
+          const rawChange = card.change !== undefined ? card.change : (card.b !== undefined ? card.b : 0);
+          
+          const price = Number(rawPrice) || 0;
+          const buyPrice = Math.round(price * 0.95); // Achat à -5% du marché
+          const sellPrice = Math.round(price * 1.05); // Revente à +5%
+          const tax = Math.round(sellPrice * 0.05);
+          const profit = sellPrice - tax - buyPrice;
+
           return {
             id: card.id || (card.c ? card.c.id : ""),
             name: rawName,
-            price: Number(rawPrice) || 0
+            price: price,
+            buyPrice: buyPrice,
+            sellPrice: sellPrice,
+            tax: tax,
+            profit: profit,
+            change: Number(rawChange) || 0
           };
         }).filter(c => c.price > 0);
 
@@ -119,10 +145,36 @@
         renderTable();
       } catch (err) {
         document.getElementById('player-table-body').innerHTML = `
-          <tr><td colspan="6" class="px-4 py-8 text-center text-red-400">
-            Impossible de charger <code>data/prices.json</code>. Vérifiez l'emplacement du fichier.
+          <tr><td colspan="7" class="px-4 py-8 text-center text-red-400">
+            Impossible de charger <code>data/prices.json</code>.
           </td></tr>`;
       }
+    }
+
+    function sortData(column) {
+      if (currentSort.column === column) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.column = column;
+        currentSort.dir = column === 'name' ? 'asc' : 'desc';
+      }
+      updateSortIcons();
+      renderTable();
+    }
+
+    function updateSortIcons() {
+      const columns = ['name', 'price', 'change', 'buyPrice', 'sellPrice', 'profit'];
+      columns.forEach(col => {
+        const el = document.getElementById(`sort-icon-${col}`);
+        if (!el) return;
+        if (currentSort.column === col) {
+          el.innerText = currentSort.dir === 'asc' ? ' ▲' : ' ▼';
+          el.className = 'text-indigo-400 text-xs ml-1 font-bold';
+        } else {
+          el.innerText = ' ⇅';
+          el.className = 'text-slate-600 text-xs ml-1';
+        }
+      });
     }
 
     function renderTable() {
@@ -130,7 +182,7 @@
       const budget = document.getElementById('budget-filter').value;
       const tbody = document.getElementById('player-table-body');
 
-      const filtered = allCards.filter(card => {
+      let filtered = allCards.filter(card => {
         const matchesSearch = card.name.toLowerCase().includes(search);
         let matchesBudget = true;
         if (budget === 'under10k') matchesBudget = card.price < 10000;
@@ -139,8 +191,18 @@
         return matchesSearch && matchesBudget;
       });
 
+      // Application du tri
+      const col = currentSort.column;
+      const dirMult = currentSort.dir === 'asc' ? 1 : -1;
+      filtered.sort((a, b) => {
+        if (typeof a[col] === 'string') {
+          return a[col].localeCompare(b[col]) * dirMult;
+        }
+        return (a[col] - b[col]) * dirMult;
+      });
+
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Aucun joueur ne correspond.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Aucun joueur ne correspond.</td></tr>`;
         return;
       }
 
@@ -148,23 +210,29 @@
       let totalProfits = 0;
 
       tbody.innerHTML = filtered.map(card => {
-        const buyPrice = Math.round(card.price * 0.95); // Achat à -5% du marché
-        const sellPrice = Math.round(card.price * 1.05); // Revente à +5%
-        const tax = Math.round(sellPrice * 0.05);
-        const profit = sellPrice - tax - buyPrice;
-
         totalPrices += card.price;
-        totalProfits += profit;
+        totalProfits += card.profit;
+
+        // Badge de tendance
+        let trendBadge = '';
+        if (card.change > 0) {
+          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">▲ +${card.change.toFixed(1)}%</span>`;
+        } else if (card.change < 0) {
+          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">▼ ${card.change.toFixed(1)}%</span>`;
+        } else {
+          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">▬ 0.0%</span>`;
+        }
 
         return `
           <tr class="hover:bg-slate-800/30 transition-colors">
             <td class="px-4 py-3 font-medium text-slate-200">${card.name}</td>
             <td class="px-4 py-3 font-semibold text-slate-100">${card.price.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 text-indigo-400">${buyPrice.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 text-slate-300">${sellPrice.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 text-red-400/80">-${tax.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 font-bold ${profit > 0 ? 'text-emerald-400' : 'text-slate-500'}">
-              +${profit.toLocaleString('fr-FR')} cr
+            <td class="px-4 py-3">${trendBadge}</td>
+            <td class="px-4 py-3 text-indigo-400">${card.buyPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 text-slate-300">${card.sellPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 text-rose-400/80">-${card.tax.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 font-bold ${card.profit > 0 ? 'text-emerald-400' : 'text-slate-500'}">
+              +${card.profit.toLocaleString('fr-FR')} cr
             </td>
           </tr>
         `;
@@ -179,8 +247,10 @@
     document.getElementById('search-input').addEventListener('input', renderTable);
     document.getElementById('budget-filter').addEventListener('change', renderTable);
 
+    // Initialisation
     loadPrices();
-    // Recharge les prix en arrière-plan toutes les 20 secondes
+
+    // Actualisation automatique toutes les 20 secondes
     setInterval(loadPrices, 20000);
   </script>
 </body>
