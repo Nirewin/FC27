@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon Dashboard FC27 Trader</title>
+  <title>FC27 Personal Trader</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -21,7 +21,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
 
   <!-- Entête -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10">
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
@@ -36,7 +36,7 @@
           type="text" 
           id="search-input" 
           placeholder="Rechercher un joueur..." 
-          class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500 w-full sm:w-48"
+          class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500 w-full sm:w-56"
         >
         <select id="budget-filter" class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
           <option value="all">Tous les budgets</option>
@@ -54,7 +54,7 @@
     <!-- Cartes Résumé -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Joueurs suivis</span>
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Joueurs analysés</span>
         <p class="text-2xl font-bold text-slate-100 mt-1" id="total-cards">0</p>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -79,7 +79,7 @@
               <th onclick="sortData('price')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
                 Prix Actuel <span id="sort-icon-price" class="text-slate-600 text-xs ml-1">⇅</span>
               </th>
-              <th onclick="sortData('change')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
+              <th onclick="sortData('change')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors w-36">
                 Tendance 24h <span id="sort-icon-change" class="text-slate-600 text-xs ml-1">⇅</span>
               </th>
               <th onclick="sortData('buyPrice')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
@@ -115,25 +115,25 @@
         const data = await response.json();
 
         allCards = (data.cards || []).map(card => {
-          const rawName = card.name || card.n || (card.c ? card.c.n : "Joueur inconnu");
-          const rawPrice = card.price || card.p || (card.c ? card.c.p : 0);
-          const rawChange = card.change !== undefined ? card.change : (card.b !== undefined ? card.b : 0);
-          
+          const rawName = card.name || card.n || "Joueur inconnu";
+          const rawPrice = card.price || card.p || 0;
           const price = Number(rawPrice) || 0;
-          const buyPrice = Math.round(price * 0.95); // Achat à -5% du marché
-          const sellPrice = Math.round(price * 1.05); // Revente à +5%
+          const buyPrice = Math.round(price * 0.95);
+          const sellPrice = Math.round(price * 1.05);
           const tax = Math.round(sellPrice * 0.05);
           const profit = sellPrice - tax - buyPrice;
 
           return {
-            id: card.id || (card.c ? card.c.id : ""),
+            id: card.id,
             name: rawName,
             price: price,
             buyPrice: buyPrice,
             sellPrice: sellPrice,
             tax: tax,
             profit: profit,
-            change: Number(rawChange) || 0
+            change: Number(card.change) || 0,
+            img: card.img || `https://cdn.futbin.com/content/fut25/players/${card.id}.png`,
+            history: card.history || [price, price]
           };
         }).filter(c => c.price > 0);
 
@@ -149,6 +149,31 @@
             Impossible de charger <code>data/prices.json</code>.
           </td></tr>`;
       }
+    }
+
+    // Générateur de mini-graphique SVG (Sparkline)
+    function generateSparkline(history, change) {
+      if (!history || history.length < 2) {
+        const color = change >= 0 ? '#10b981' : '#f43f5e';
+        return `<svg class="w-20 h-6" viewBox="0 0 100 30"><line x1="0" y1="15" x2="100" y2="15" stroke="${color}" stroke-width="2" stroke-dasharray="3 3"/></svg>`;
+      }
+
+      const min = Math.min(...history);
+      const max = Math.max(...history);
+      const range = (max - min) || 1;
+      
+      const points = history.map((val, idx) => {
+        const x = (idx / (history.length - 1)) * 100;
+        const y = 26 - ((val - min) / range) * 22;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+
+      const strokeColor = change >= 0 ? '#10b981' : '#f43f5e';
+      return `
+        <svg class="w-20 h-7 overflow-visible" viewBox="0 0 100 30">
+          <polyline fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+        </svg>
+      `;
     }
 
     function sortData(column) {
@@ -191,13 +216,10 @@
         return matchesSearch && matchesBudget;
       });
 
-      // Application du tri
       const col = currentSort.column;
       const dirMult = currentSort.dir === 'asc' ? 1 : -1;
       filtered.sort((a, b) => {
-        if (typeof a[col] === 'string') {
-          return a[col].localeCompare(b[col]) * dirMult;
-        }
+        if (typeof a[col] === 'string') return a[col].localeCompare(b[col]) * dirMult;
         return (a[col] - b[col]) * dirMult;
       });
 
@@ -213,21 +235,32 @@
         totalPrices += card.price;
         totalProfits += card.profit;
 
-        // Badge de tendance
-        let trendBadge = '';
-        if (card.change > 0) {
-          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">▲ +${card.change.toFixed(1)}%</span>`;
-        } else if (card.change < 0) {
-          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">▼ ${card.change.toFixed(1)}%</span>`;
-        } else {
-          trendBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">▬ 0.0%</span>`;
-        }
+        const sparklineSvg = generateSparkline(card.history, card.change);
 
         return `
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="px-4 py-3 font-medium text-slate-200">${card.name}</td>
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="px-4 py-2 font-medium text-slate-200">
+              <div class="flex items-center gap-3">
+                <div class="relative w-9 h-12 flex-shrink-0 flex items-center justify-center">
+                  <img 
+                    src="${card.img}" 
+                    alt="${card.name}" 
+                    class="w-9 h-12 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-30 transform-gpu cursor-pointer drop-shadow-md"
+                    onerror="this.onerror=null; this.src='https://cdn.futbin.com/content/fut25/players/${card.id}.png';"
+                  />
+                </div>
+                <span class="font-semibold text-slate-100">${card.name}</span>
+              </div>
+            </td>
             <td class="px-4 py-3 font-semibold text-slate-100">${card.price.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3">${trendBadge}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                ${sparklineSvg}
+                <span class="text-xs font-semibold ${card.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                  ${card.change >= 0 ? '+' : ''}${card.change.toFixed(1)}%
+                </span>
+              </div>
+            </td>
             <td class="px-4 py-3 text-indigo-400">${card.buyPrice.toLocaleString('fr-FR')} cr</td>
             <td class="px-4 py-3 text-slate-300">${card.sellPrice.toLocaleString('fr-FR')} cr</td>
             <td class="px-4 py-3 text-rose-400/80">-${card.tax.toLocaleString('fr-FR')} cr</td>
@@ -238,7 +271,6 @@
         `;
       }).join('');
 
-      // Statistiques globales
       document.getElementById('total-cards').innerText = filtered.length;
       document.getElementById('avg-price').innerText = `${Math.round(totalPrices / filtered.length).toLocaleString('fr-FR')} cr`;
       document.getElementById('avg-profit').innerText = `+${Math.round(totalProfits / filtered.length).toLocaleString('fr-FR')} cr`;
@@ -247,10 +279,7 @@
     document.getElementById('search-input').addEventListener('input', renderTable);
     document.getElementById('budget-filter').addEventListener('change', renderTable);
 
-    // Initialisation
     loadPrices();
-
-    // Actualisation automatique toutes les 20 secondes
     setInterval(loadPrices, 20000);
   </script>
 </body>
