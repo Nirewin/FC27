@@ -1,101 +1,185 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FC27 Trader — 100 % gratuit</title>
-<style>
-:root{--bg:#f6f7fa;--c:#fff;--b:#dde2ea;--t:#141a24;--m:#667085;--a:#d99a00;--g:#0f9d6b;--r:#d9363e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0d12;--c:#111722;--b:#222b3a;--t:#e8ecf2;--m:#8d97a8;--a:#fbbf24;--g:#34d399;--r:#f87171}}
-:root[data-theme="dark"]{--bg:#0a0d12;--c:#111722;--b:#222b3a;--t:#e8ecf2;--m:#8d97a8;--a:#fbbf24;--g:#34d399;--r:#f87171}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--t);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:1000px;margin:0 auto;padding:20px 16px 40px}
-h1{text-align:center;margin:8px 0 2px;font-size:26px}
-.sub{text-align:center;color:var(--m);margin:0 0 18px}
-.sub b{color:var(--a)}
-#nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
-button,input,select,textarea{font:inherit;color:var(--t);background:var(--c);border:1px solid var(--b);border-radius:8px;padding:7px 10px;max-width:100%}
-button{cursor:pointer}
-#nav button.on,.pri{background:var(--a);color:#111;border-color:var(--a);font-weight:600}
-.card{background:var(--c);border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:14px}
-.card h3{margin:0 0 6px;font-size:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
-.grid .card{margin:0}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.row input{flex:1 1 110px;min-width:0}
-.li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--b);flex-wrap:wrap}
-.m{color:var(--m);font-size:13px;margin:2px 0 6px}
-.up{color:var(--g)}.dn{color:var(--r)}
-em{font-size:11px;color:var(--a);border:1px solid var(--a);border-radius:99px;padding:0 6px;font-style:normal}
-.x{border:0;background:none;color:var(--m);padding:0 4px}
-.sc{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-td,th{text-align:left;padding:6px 8px;border-top:1px solid var(--b);white-space:nowrap}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--b);border-radius:99px;padding:3px 10px;cursor:pointer}
-textarea{width:100%;margin:8px 0}
-</style></head><body><main>
-<h1>FC27 Trader</h1>
-<p class="sub">Tout pour trader efficacement · <b>100 % gratuit</b>, sans limite ni abonnement</p><p class="sub" id="st">Chargement des prix…</p>
-<div id="nav"></div><div id="v"></div>
-<p class="m" style="text-align:center">Prix FUTBIN (PlayStation) mis à jour automatiquement environ toutes les 30 minutes. Les tendances se calculent à partir de l'historique du site : elles se remplissent au bout de quelques heures.</p>
-</main>
-<script>
-const $=s=>document.querySelector(s),V=id=>$('#'+id).value;
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let S=null;try{S=JSON.parse(localStorage.getItem('fc27'))}catch(e){}
-if(!S){let i=1;S={cards:[],lists:[],pf:[],sales:[],sel:[]}}
-const save=()=>{try{localStorage.setItem('fc27',JSON.stringify(S))}catch(e){}};
-const T=['Moins de 1 000','1 000 – 10 000','10 000 – 50 000','50 000 et +'];
-const tr=p=>p<1e3?0:p<1e4?1:p<5e4?2:3;
-const f=n=>Math.round(n).toLocaleString('fr-FR');
-const pc=n=>`<span class="${n>0?'up':n<0?'dn':''}">${n>0?'+':''}${n}%</span>`;
-let tab=0;const tabs=['Marché','Techniques','Portefeuille','Mes listes','Analyse rapide','Communauté'];
-function draw(){$('#nav').innerHTML=tabs.map((t,i)=>`<button class="${i==tab?'on':''}" onclick="tab=${i};draw()">${t}</button>`).join('');$('#v').innerHTML=[vM,vT,vP,vL,vA,vC][tab]()}
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Dashboard FC27 Trader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#6366f1', 600: '#4f46e5' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
 
-function vM(){
- let h=`<div class="card"><h3>Ajouter / modifier une carte</h3><div class="row"><input id="n" placeholder="Nom"><input id="p" type="number" placeholder="Prix"><input id="a" type="number" placeholder="6h %"><input id="b" type="number" placeholder="24h %"><input id="c" type="number" placeholder="48h %"><input id="o" type="number" placeholder="Popularité 0-100"><button class="pri" onclick="addC()">Enregistrer</button></div></div><div class="card"><h3>Importer depuis fut.gg</h3><p class="m">Sur fut.gg/players/momentum, choisis une période, sélectionne la liste, copie-la et colle-la ici. Le prix est estimé (≈) à partir de la variation.</p><div class="row"><select id="w"><option value="a">Période 6h</option><option value="b">Période 24h</option></select><button class="pri" onclick="impF()">Importer</button></div><textarea id="fg" rows="4" placeholder="Gosens - 85 - Destined for Glory -16.85%-6,192 ..."></textarea></div><div class="grid">`;
- T.forEach((t,i)=>{const L=S.cards.filter(c=>tr(c.p)==i),avg=L.length?L.reduce((s,c)=>s+c.b,0)/L.length:0;
-  h+=`<div class="card"><h3>${t}</h3><p class="m">${L.length} cartes · indice 24h ${pc(+avg.toFixed(1))}</p>`+L.map(c=>`<div class="li"><span>${esc(c.n)} ${avg>0&&c.b<avg?'<em>en retard</em>':''}</span><span>${f(c.p)} ${pc(c.b)} <button class="x" onclick="delC(${c.id})">×</button></span></div>`).join('')+'</div>'});
- return h+'</div>'}
-function addC(){const n=V('n').trim(),p=+V('p');if(!n||!(p>0))return;
- const d={n,p,a:+V('a')||0,b:+V('b')||0,c:+V('c')||0,o:Math.min(100,+V('o')||0)},x=S.cards.find(c=>c.n.toLowerCase()==n.toLowerCase());
- if(x)Object.assign(x,d);else S.cards.push({id:Date.now(),...d});save();draw()}
-function impF(){const t=V('fg').replace(/[−–]/g,'-').replace(/\s+/g,' '),w=V('w');let k=0,m;
- const re=/([A-Za-zÀ-ÿ'.\- ]+?) - (\d{2}) - ([A-Za-z0-9 ]+?) ([+-]?\d+(?:\.\d+)?)%\s?([+-]?[\d,]+)/g;
- while((m=re.exec(t))){const pct=+m[4],d=+m[5].replace(/,/g,'');if(!pct||!d)continue;
-  const p=Math.round(d*(100/pct+1));if(!(p>0))continue;
-  const n=`${m[1].trim()} ${m[2]} ${m[3].trim()}`,x=S.cards.find(c=>c.n.toLowerCase()==n.toLowerCase());
-  if(x){x.p=p;x[w]=pct}else S.cards.push({id:Date.now()+k,n,p,a:0,b:0,c:0,o:50,[w]:pct});k++}
- if(k)S.cards=S.cards.filter(c=>!c.n.startsWith('Démo'));save();draw()}
-function delC(id){S.cards=S.cards.filter(c=>c.id!=id);S.sel=S.sel.filter(x=>x!=id);S.lists.forEach(l=>l.ids=l.ids.filter(x=>x!=id));save();draw()}
+  <!-- Entête -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+          FC27 Personal Trader
+        </h1>
+        <p class="text-xs text-slate-400 mt-1" id="last-updated">Dernière mise à jour : Chargement...</p>
+      </div>
 
-function tech(title,desc,L,bm,sm){return `<div class="card"><h3>${title}</h3><p class="m">${desc}</p>`+(L.length?L.map(c=>{const b=Math.round(typeof bm=='function'?bm(c):c.p*bm),s=Math.round(typeof sm=='function'?sm(c):c.p*sm);return `<div class="li"><span>${esc(c.n)}</span><span>achat ${f(b)} → vente ${f(s)} · <b class="up">+${f(s*.95-b)}</b></span></div>`}).join(''):'<p class="m">Aucune carte ne correspond.</p>')+'</div>'}
-function vT(){const C=S.cards;return '<div class="grid">'+tech('MilliBuu','Cartes Or achetées entre 650 et 1 100, revendues entre 1 500 et 2 000.',C.filter(c=>c.p>=650&&c.p<=1100),c=>c.p,c=>Math.round((1500+(c.p-650)*500/450)/50)*50)+tech('Argent / Bronze','Cartes à moins de 1 000 pièces.',C.filter(c=>c.p<1e3),.9,1.1)+tech('Flip','Cartes très actives (forte variation ou populaires).',C.filter(c=>c.o>=60||Math.abs(c.b)>=3),.94,1.04)+'</div><p class="m">Profit net = vente × 0,95 (taxe 5 %) − achat. Seuils estimatifs, recalculés dès que tu modifies les prix.</p>'}
+      <!-- Filtres et Recherche -->
+      <div class="flex flex-wrap items-center gap-3">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Rechercher un joueur..." 
+          class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500 w-full sm:w-48"
+        >
+        <select id="budget-filter" class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+          <option value="all">Tous les budgets</option>
+          <option value="under10k">Moins de 10 000 cr</option>
+          <option value="10k-50k">10 000 – 50 000 cr</option>
+          <option value="over50k">Plus de 50 000 cr</option>
+        </select>
+      </div>
+    </div>
+  </header>
 
-function vP(){let real=0,est=0;
- const rows=S.pf.map((x,i)=>{const cur=S.cards.find(c=>c.n.toLowerCase()==x.n.toLowerCase());let pr=null;
-  if(x.s){pr=x.s*.95-x.b;real+=pr}else if(cur){pr=cur.p*.95-x.b;est+=pr}
-  return `<tr><td>${esc(x.n)}</td><td>${f(x.b)}</td><td>${x.s?f(x.s):'—'}</td><td>${pr==null?'—':`<span class="${pr>=0?'up':'dn'}">${f(pr)}</span>`}</td><td><button class="x" onclick="S.pf.splice(${i},1);save();draw()">×</button></td></tr>`}).join('');
- return `<div class="card"><h3>Ajouter un trade</h3><div class="row"><input id="n" placeholder="Nom"><input id="b" type="number" placeholder="Prix d'achat"><input id="s" type="number" placeholder="Prix de vente (optionnel)"><button class="pri" onclick="addP()">Ajouter</button></div><details><summary class="m">Import en masse</summary><textarea id="imp" rows="4" placeholder="nom;achat;vente (une ligne par carte)"></textarea><button onclick="impP()">Importer</button></details></div><div class="card"><div class="row"><span>Profit réalisé : <b>${f(real)}</b></span><span>Profit estimé : <b>${f(est)}</b></span></div><div class="sc"><table><tr><th>Carte</th><th>Achat</th><th>Vente</th><th>Profit</th><th></th></tr>${rows||'<tr><td colspan="5" class="m">Aucun trade.</td></tr>'}</table></div></div>`}
-function addP(){const b=+V('b');if(!V('n')||!(b>0))return;S.pf.push({n:V('n').trim(),b,s:+V('s')||0});save();draw()}
-function impP(){V('imp').split('\n').forEach(l=>{const[n,b,s]=l.split(';');if(n&&+b>0)S.pf.push({n:n.trim(),b:+b,s:+s||0})});save();draw()}
+  <!-- Contenu Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    
+    <!-- Cartes Résumé -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Joueurs suivis</span>
+        <p class="text-2xl font-bold text-slate-100 mt-1" id="total-cards">0</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Prix Moyen</span>
+        <p class="text-2xl font-bold text-indigo-400 mt-1" id="avg-price">0 cr</p>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Bénéfice Moyen Estimé</span>
+        <p class="text-2xl font-bold text-emerald-400 mt-1" id="avg-profit">0 cr</p>
+      </div>
+    </div>
 
-function vL(){const o=S.cards.map(c=>`<option value="${c.id}">${esc(c.n)}</option>`).join('');
- return `<div class="card"><div class="row"><input id="ln" placeholder="Nom de la liste (ex : Flip)"><button class="pri" onclick="addL()">Créer</button></div></div><div class="grid">`+S.lists.map((l,i)=>`<div class="card"><h3>${esc(l.n)} <button class="x" onclick="S.lists.splice(${i},1);save();draw()">×</button></h3>`+l.ids.map(id=>{const c=S.cards.find(c=>c.id==id);return c?`<div class="li"><span>${esc(c.n)}</span><span>${f(c.p)} ${pc(c.b)} <button class="x" onclick="S.lists[${i}].ids=S.lists[${i}].ids.filter(x=>x!=${id});save();draw()">×</button></span></div>`:''}).join('')+`<div class="row"><select id="s${i}">${o}</select><button onclick="addTo(${i})">Ajouter</button></div></div>`).join('')+'</div>'}
-function addL(){if(!V('ln').trim())return;S.lists.push({n:V('ln').trim(),ids:[]});save();draw()}
-function addTo(i){const id=+V('s'+i);if(id&&!S.lists[i].ids.includes(id))S.lists[i].ids.push(id);save();draw()}
+    <!-- Tableau -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-800/60 text-slate-400 uppercase text-xs font-semibold border-b border-slate-800">
+            <tr>
+              <th class="px-4 py-3">Joueur</th>
+              <th class="px-4 py-3">Prix Actuel</th>
+              <th class="px-4 py-3">Prix d'Achat Cible</th>
+              <th class="px-4 py-3">Revente Conseillée</th>
+              <th class="px-4 py-3">Taxe EA (5%)</th>
+              <th class="px-4 py-3">Bénéfice Net</th>
+            </tr>
+          </thead>
+          <tbody id="player-table-body" class="divide-y divide-slate-800/50">
+            <tr>
+              <td colspan="6" class="px-4 py-8 text-center text-slate-500">Chargement des données...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
-function vA(){const L=S.cards.filter(c=>S.sel.includes(c.id));
- return `<div class="card"><h3>Choisis les cartes à comparer</h3><div class="chips">`+S.cards.map(c=>`<label class="chip"><input type="checkbox" ${S.sel.includes(c.id)?'checked':''} onchange="tg(${c.id})"> ${esc(c.n)}</label>`).join('')+`</div></div><div class="card sc"><table><tr><th>Carte</th><th>Prix</th><th>6h</th><th>24h</th><th>48h</th><th>Tendance</th><th>Popularité</th></tr>`+(L.map(c=>{const t=c.a+c.b+c.c;return `<tr><td>${esc(c.n)}</td><td>${f(c.p)}</td><td>${pc(c.a)}</td><td>${pc(c.b)}</td><td>${pc(c.c)}</td><td>${t>0?'↗':t<0?'↘':'→'}</td><td>${c.o}</td></tr>`}).join('')||'<tr><td colspan="7" class="m">Sélectionne des cartes.</td></tr>')+'</table></div>'}
-function tg(id){S.sel=S.sel.includes(id)?S.sel.filter(x=>x!=id):[...S.sel,id];save();draw()}
+  <script>
+    let allCards = [];
 
-function vC(){const g={};S.sales.forEach(s=>{(g[s.n]=g[s.n]||[]).push(s.p)});
- return `<div class="card"><h3>Déclarer une vente</h3><div class="row"><input id="n" placeholder="Carte"><input id="p" type="number" placeholder="Prix de vente"><button class="pri" onclick="addS()">Ajouter</button></div><p class="m">Pour l'instant, ces ventes restent sur ton appareil.</p></div><div class="card"><h3>Meilleures ventes</h3>`+(Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([n,a])=>`<div class="li"><span>${esc(n)}</span><span>${a.length} vente(s) · moyenne ${f(a.reduce((x,y)=>x+y,0)/a.length)}</span></div>`).join('')||'<p class="m">Aucune vente.</p>')+'</div>'}
-function addS(){const p=+V('p');if(!V('n').trim()||!(p>0))return;S.sales.push({n:V('n').trim(),p});save();draw()}
-async function load(){try{const r=await fetch('data/prices.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();
- S.cards=[...S.cards.filter(c=>!c.live),...j.cards.map(c=>({...c,id:+c.id,live:true}))];
- $('#st').textContent='Prix mis à jour le '+new Date(j.updated).toLocaleString('fr-FR')+' · '+j.cards.length+' cartes';save();
- if(!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))draw()}catch(e){$('#st').textContent='Prix automatiques pas encore disponibles.'}}
-draw();load();setInterval(load,300000);
-</script></body></html>
+    async function loadPrices() {
+      try {
+        const response = await fetch('data/prices.json');
+        if (!response.ok) throw new Error("Fichier introuvable");
+        const data = await response.json();
+
+        // Supporte les 2 structures de données
+        allCards = (data.cards || []).map(card => {
+          const rawName = card.name || card.n || (card.c ? card.c.n : "Joueur inconnu");
+          const rawPrice = card.price || card.p || (card.c ? card.c.p : 0);
+          return {
+            id: card.id || (card.c ? card.c.id : ""),
+            name: rawName,
+            price: Number(rawPrice) || 0
+          };
+        }).filter(c => c.price > 0);
+
+        if (data.updated) {
+          const date = new Date(data.updated);
+          document.getElementById('last-updated').innerText = `Dernière mise à jour : ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR')}`;
+        }
+
+        renderTable();
+      } catch (err) {
+        document.getElementById('player-table-body').innerHTML = `
+          <tr><td colspan="6" class="px-4 py-8 text-center text-red-400">
+            Impossible de charger <code>data/prices.json</code>. Vérifiez l'emplacement du fichier.
+          </td></tr>`;
+      }
+    }
+
+    function renderTable() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const budget = document.getElementById('budget-filter').value;
+      const tbody = document.getElementById('player-table-body');
+
+      const filtered = allCards.filter(card => {
+        const matchesSearch = card.name.toLowerCase().includes(search);
+        let matchesBudget = true;
+        if (budget === 'under10k') matchesBudget = card.price < 10000;
+        else if (budget === '10k-50k') matchesBudget = card.price >= 10000 && card.price <= 50000;
+        else if (budget === 'over50k') matchesBudget = card.price > 50000;
+        return matchesSearch && matchesBudget;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Aucun joueur ne correspond.</td></tr>`;
+        return;
+      }
+
+      let totalPrices = 0;
+      let totalProfits = 0;
+
+      tbody.innerHTML = filtered.map(card => {
+        const buyPrice = Math.round(card.price * 0.95); // Achat à -5% du marché
+        const sellPrice = Math.round(card.price * 1.05); // Revente à +5%
+        const tax = Math.round(sellPrice * 0.05);
+        const profit = sellPrice - tax - buyPrice;
+
+        totalPrices += card.price;
+        totalProfits += profit;
+
+        return `
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="px-4 py-3 font-medium text-slate-200">${card.name}</td>
+            <td class="px-4 py-3 font-semibold text-slate-100">${card.price.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 text-indigo-400">${buyPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 text-slate-300">${sellPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 text-red-400/80">-${tax.toLocaleString('fr-FR')} cr</td>
+            <td class="px-4 py-3 font-bold ${profit > 0 ? 'text-emerald-400' : 'text-slate-500'}">
+              +${profit.toLocaleString('fr-FR')} cr
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Statistiques globales
+      document.getElementById('total-cards').innerText = filtered.length;
+      document.getElementById('avg-price').innerText = `${Math.round(totalPrices / filtered.length).toLocaleString('fr-FR')} cr`;
+      document.getElementById('avg-profit').innerText = `+${Math.round(totalProfits / filtered.length).toLocaleString('fr-FR')} cr`;
+    }
+
+    document.getElementById('search-input').addEventListener('input', renderTable);
+    document.getElementById('budget-filter').addEventListener('change', renderTable);
+
+    loadPrices();
+  </script>
+</body>
+</html>
