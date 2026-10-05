@@ -151,7 +151,6 @@
       }
     }
 
-    // Générateur de mini-graphique SVG (Sparkline)
     function generateSparkline(history, change) {
       if (!history || history.length < 2) {
         const color = change >= 0 ? '#10b981' : '#f43f5e';
@@ -241,12 +240,13 @@
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="px-4 py-2 font-medium text-slate-200">
               <div class="flex items-center gap-3">
-                <div class="relative w-12 h-14 flex-shrink-0 flex items-center justify-center">
+                <div class="relative w-10 h-12 flex-shrink-0 flex items-center justify-center bg-slate-800/40 rounded">
                   <img 
-                    src="https://cdn.futbin.com/content/fut25/players/${card.id}.png" 
-                    alt="${card.name}" 
-                    class="w-12 h-14 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-50 transform-gpu cursor-pointer drop-shadow-md"
+                    src="${card.img}" 
+                    alt="" 
+                    class="w-10 h-12 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-50 transform-gpu cursor-pointer drop-shadow-md"
                     loading="lazy"
+                    onerror="this.style.display='none';"
                   />
                 </div>
                 <span class="font-semibold text-slate-100 whitespace-nowrap">${card.name}</span>
