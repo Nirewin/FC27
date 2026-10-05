@@ -120,9 +120,10 @@
       }
     }
 
-    async function loadPrices() {
+ async function loadPrices() {
       try {
-        const response = await fetch('data/prices.json?t=' + Date.now());
+        // Correction : "prices.json" au lieu de "data/prices.json"
+        const response = await fetch('prices.json?t=' + Date.now());
         if (!response.ok) throw new Error("Fichier introuvable");
         const data = await response.json();
 
@@ -158,11 +159,11 @@
       } catch (err) {
         document.getElementById('player-table-body').innerHTML = `
           <tr><td colspan="7" class="px-4 py-8 text-center text-red-400">
-            Chargement de <code>data/prices.json</code>...
+            Erreur de chargement de <code>prices.json</code>
           </td></tr>`;
       }
     }
-
+    
     function generateSparkline(history, change) {
       if (!history || history.length < 2) {
         const color = change >= 0 ? '#10b981' : '#f43f5e';
