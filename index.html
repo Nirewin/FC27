@@ -108,11 +108,11 @@
     let allCards = [];
     let currentSort = { column: 'profit', dir: 'desc' };
 
-    // Gestion de l'erreur d'image avec écusson FC27 de secours
+    // Gestion de l'erreur d'image avec repli sur le CDN FC 27
     function handleImageError(img, id) {
       if (!img.dataset.triedFallback) {
         img.dataset.triedFallback = "1";
-        img.src = `https://cdn.futbin.com/content/fut25/players/${id}.png`;
+        img.src = `https://cdn.futbin.com/content/fut27/players/${id}.png`;
       } else {
         img.onerror = null;
         img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 40' fill='none'><path d='M16 2L2 8v12c0 9.5 6.5 17 14 18 7.5-1 14-8.5 14-18V8L16 2z' fill='%231e293b' stroke='%236366f1' stroke-width='2'/><text x='16' y='24' font-size='9' font-weight='bold' fill='%23818cf8' text-anchor='middle'>FC27</text></svg>";
@@ -120,9 +120,9 @@
       }
     }
 
- async function loadPrices() {
+    async function loadPrices() {
       try {
-        // Correction : "prices.json" au lieu de "data/prices.json"
+        // Chargement direct de prices.json à la racine avec horodatage anti-cache
         const response = await fetch('prices.json?t=' + Date.now());
         if (!response.ok) throw new Error("Fichier introuvable");
         const data = await response.json();
@@ -145,7 +145,7 @@
             tax: tax,
             profit: profit,
             change: Number(card.change) || 0,
-            img: card.img || `https://cdn.futbin.com/content/fut25/img/players/p${card.id}.png`,
+            img: card.img || `https://cdn.futbin.com/content/fut27/img/players/p${card.id}.png`,
             history: card.history || [price, price]
           };
         }).filter(c => c.price > 0);
@@ -159,11 +159,11 @@
       } catch (err) {
         document.getElementById('player-table-body').innerHTML = `
           <tr><td colspan="7" class="px-4 py-8 text-center text-red-400">
-            Erreur de chargement de <code>prices.json</code>
+            Erreur lors du chargement de <code>prices.json</code>.
           </td></tr>`;
       }
     }
-    
+
     function generateSparkline(history, change) {
       if (!history || history.length < 2) {
         const color = change >= 0 ? '#10b981' : '#f43f5e';
@@ -290,10 +290,4 @@
     }
 
     document.getElementById('search-input').addEventListener('input', renderTable);
-    document.getElementById('budget-filter').addEventListener('change', renderTable);
-
-    loadPrices();
-    setInterval(loadPrices, 20000);
-  </script>
-</body>
-</html>
+    document.getElementById('budget
