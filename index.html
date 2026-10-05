@@ -108,6 +108,18 @@
     let allCards = [];
     let currentSort = { column: 'profit', dir: 'desc' };
 
+    // Gestion de l'erreur d'image avec écusson FC27 de secours
+    function handleImageError(img, id) {
+      if (!img.dataset.triedFallback) {
+        img.dataset.triedFallback = "1";
+        img.src = `https://cdn.futbin.com/content/fut25/players/${id}.png`;
+      } else {
+        img.onerror = null;
+        img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 40' fill='none'><path d='M16 2L2 8v12c0 9.5 6.5 17 14 18 7.5-1 14-8.5 14-18V8L16 2z' fill='%231e293b' stroke='%236366f1' stroke-width='2'/><text x='16' y='24' font-size='9' font-weight='bold' fill='%23818cf8' text-anchor='middle'>FC27</text></svg>";
+        img.className = "w-8 h-10 object-contain drop-shadow";
+      }
+    }
+
     async function loadPrices() {
       try {
         const response = await fetch('data/prices.json?t=' + Date.now());
@@ -132,7 +144,7 @@
             tax: tax,
             profit: profit,
             change: Number(card.change) || 0,
-            img: card.img || `https://cdn.futbin.com/content/fut25/players/${card.id}.png`,
+            img: card.img || `https://cdn.futbin.com/content/fut25/img/players/p${card.id}.png`,
             history: card.history || [price, price]
           };
         }).filter(c => c.price > 0);
@@ -146,7 +158,7 @@
       } catch (err) {
         document.getElementById('player-table-body').innerHTML = `
           <tr><td colspan="7" class="px-4 py-8 text-center text-red-400">
-            Impossible de charger <code>data/prices.json</code>.
+            Chargement de <code>data/prices.json</code>...
           </td></tr>`;
       }
     }
@@ -240,13 +252,13 @@
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="px-4 py-2 font-medium text-slate-200">
               <div class="flex items-center gap-3">
-                <div class="relative w-10 h-12 flex-shrink-0 flex items-center justify-center bg-slate-800/40 rounded">
+                <div class="relative w-10 h-12 flex-shrink-0 flex items-center justify-center bg-slate-800/30 rounded border border-slate-800/50 overflow-hidden">
                   <img 
                     src="${card.img}" 
-                    alt="" 
+                    alt="${card.name}" 
                     class="w-10 h-12 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-50 transform-gpu cursor-pointer drop-shadow-md"
                     loading="lazy"
-                    onerror="this.style.display='none';"
+                    onerror="handleImageError(this, '${card.id}')"
                   />
                 </div>
                 <span class="font-semibold text-slate-100 whitespace-nowrap">${card.name}</span>
