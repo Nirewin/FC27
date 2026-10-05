@@ -180,6 +180,8 @@
     document.getElementById('budget-filter').addEventListener('change', renderTable);
 
     loadPrices();
+    // Recharge les prix en arrière-plan toutes les 20 secondes
+    setInterval(loadPrices, 20000);
   </script>
 </body>
 </html>
