@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FC27 Personal Trader</title>
+  <title>FC27 Pro Trader | Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -11,92 +11,97 @@
       theme: {
         extend: {
           colors: {
-            brand: { 500: '#6366f1', 600: '#4f46e5' }
+            dark: {
+              950: '#090d16',
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155'
+            }
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+<body class="bg-dark-950 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
 
-  <!-- Entête -->
-  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-20">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-          FC27 Personal Trader
-        </h1>
-        <p class="text-xs text-slate-400 mt-1" id="last-updated">Dernière mise à jour : Chargement...</p>
+  <!-- Header / Navbar -->
+  <header class="border-b border-dark-800 bg-dark-900/60 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">FC27 Pro Trader</h1>
+          <p class="text-xs text-slate-400" id="last-updated">Synchronisation en cours...</p>
+        </div>
       </div>
 
-      <!-- Filtres et Recherche -->
-      <div class="flex flex-wrap items-center gap-3">
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder="Rechercher un joueur..." 
-          class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500 w-full sm:w-56"
-        >
-        <select id="budget-filter" class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
-          <option value="all">Tous les budgets</option>
-          <option value="under10k">Moins de 10 000 cr</option>
-          <option value="10k-50k">10 000 – 50 000 cr</option>
-          <option value="over50k">Plus de 50 000 cr</option>
-        </select>
+      <!-- Actions Rapides & Recherche -->
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Rechercher un joueur..." 
+            class="bg-dark-800 border border-dark-700 text-sm rounded-xl px-4 py-2.5 pl-10 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 transition-all"
+          >
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
       </div>
     </div>
   </header>
 
   <!-- Contenu Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-8">
+  <main class="max-w-7xl mx-auto px-6 py-8">
     
-    <!-- Cartes Résumé -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Joueurs analysés</span>
-        <p class="text-2xl font-bold text-slate-100 mt-1" id="total-cards">0</p>
+    <!-- Statistiques Globales (KPIs) -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-5 mb-8">
+      <div class="bg-dark-900 border border-dark-800 rounded-2xl p-5 relative overflow-hidden shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Joueurs Suivis</div>
+        <div class="text-3xl font-extrabold text-white mt-2" id="stat-cards">0</div>
+        <div class="absolute right-4 bottom-4 text-indigo-500/10 font-black text-6xl select-none">#</div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Prix Moyen</span>
-        <p class="text-2xl font-bold text-indigo-400 mt-1" id="avg-price">0 cr</p>
+      <div class="bg-dark-900 border border-dark-800 rounded-2xl p-5 relative overflow-hidden shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Prix Moyen Marché</div>
+        <div class="text-3xl font-extrabold text-indigo-400 mt-2" id="stat-avg-price">0 cr</div>
+        <div class="absolute right-4 bottom-4 text-indigo-500/10 font-black text-6xl select-none">CR</div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Bénéfice Moyen Estimé</span>
-        <p class="text-2xl font-bold text-emerald-400 mt-1" id="avg-profit">0 cr</p>
+      <div class="bg-dark-900 border border-dark-800 rounded-2xl p-5 relative overflow-hidden shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Bénéfice Net Moyen</div>
+        <div class="text-3xl font-extrabold text-emerald-400 mt-2" id="stat-avg-profit">0 cr</div>
+        <div class="absolute right-4 bottom-4 text-emerald-500/10 font-black text-6xl select-none">+</div>
+      </div>
+      <div class="bg-dark-900 border border-dark-800 rounded-2xl p-5 relative overflow-hidden shadow-sm flex flex-col justify-between">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Filtre Stratégie / Tech</div>
+        <select id="tech-filter" class="bg-dark-800 border border-dark-700 text-sm rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500 mt-2 cursor-pointer">
+          <option value="all">Toutes les Techniques</option>
+          <option value="Flip">Tech Flip</option>
+          <option value="Millibuu">Tech Millibuu</option>
+        </select>
       </div>
     </div>
 
-    <!-- Tableau -->
-    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+    <!-- Tableau Professionnel -->
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl overflow-hidden shadow-xl">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-800/60 text-slate-400 uppercase text-xs font-semibold border-b border-slate-800 select-none">
+          <thead class="bg-dark-800/50 text-slate-400 uppercase text-[11px] font-bold tracking-wider border-b border-dark-800 select-none">
             <tr>
-              <th onclick="sortData('name')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
-                Joueur <span id="sort-icon-name" class="text-slate-600 text-xs ml-1">⇅</span>
-              </th>
-              <th onclick="sortData('price')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
-                Prix Actuel <span id="sort-icon-price" class="text-slate-600 text-xs ml-1">⇅</span>
-              </th>
-              <th onclick="sortData('change')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors w-36">
-                Tendance 24h <span id="sort-icon-change" class="text-slate-600 text-xs ml-1">⇅</span>
-              </th>
-              <th onclick="sortData('buyPrice')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
-                Achat Cible <span id="sort-icon-buyPrice" class="text-slate-600 text-xs ml-1">⇅</span>
-              </th>
-              <th onclick="sortData('sellPrice')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
-                Revente Conseillée <span id="sort-icon-sellPrice" class="text-slate-600 text-xs ml-1">⇅</span>
-              </th>
-              <th class="px-4 py-3">Taxe EA (5%)</th>
-              <th onclick="sortData('profit')" class="px-4 py-3 cursor-pointer hover:text-indigo-300 transition-colors">
-                Bénéfice Net <span id="sort-icon-profit" class="text-indigo-400 text-xs ml-1">▼</span>
-              </th>
+              <th class="px-6 py-4 cursor-pointer hover:text-indigo-400 transition-colors" onclick="sortData('name')">Joueur <span id="sort-icon-name">⇅</span></th>
+              <th class="px-6 py-4">Technique</th>
+              <th class="px-6 py-4 cursor-pointer hover:text-indigo-400 transition-colors" onclick="sortData('price')">Prix Actuel <span id="sort-icon-price">⇅</span></th>
+              <th class="px-6 py-4">Tendance 24h</th>
+              <th class="px-6 py-4 text-indigo-400">Achat Cible</th>
+              <th class="px-6 py-4">Revente Conseillée</th>
+              <th class="px-6 py-4">Taxe (5%)</th>
+              <th class="px-6 py-4 cursor-pointer hover:text-indigo-400 transition-colors" onclick="sortData('profit')">Bénéfice Net <span id="sort-icon-profit">▼</span></th>
             </tr>
           </thead>
-          <tbody id="player-table-body" class="divide-y divide-slate-800/50">
+          <tbody id="player-table-body" class="divide-y divide-dark-800/50">
             <tr>
-              <td colspan="7" class="px-4 py-8 text-center text-slate-500">Chargement des données...</td>
+              <td colspan="8" class="px-6 py-12 text-center text-slate-500">Chargement des données du marché...</td>
             </tr>
           </tbody>
         </table>
@@ -104,86 +109,71 @@
     </div>
   </main>
 
+  <!-- Script JavaScript du Dashboard -->
   <script>
     let allCards = [];
     let currentSort = { column: 'profit', dir: 'desc' };
 
-    // Gestion de l'erreur d'image avec repli sur le CDN FC 27
-    function handleImageError(img, id) {
-      if (!img.dataset.triedFallback) {
-        img.dataset.triedFallback = "1";
-        img.src = `https://cdn.futbin.com/content/fut27/players/${id}.png`;
-      } else {
-        img.onerror = null;
-        img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 40' fill='none'><path d='M16 2L2 8v12c0 9.5 6.5 17 14 18 7.5-1 14-8.5 14-18V8L16 2z' fill='%231e293b' stroke='%236366f1' stroke-width='2'/><text x='16' y='24' font-size='9' font-weight='bold' fill='%23818cf8' text-anchor='middle'>FC27</text></svg>";
-        img.className = "w-8 h-10 object-contain drop-shadow";
-      }
-    }
-
     async function loadPrices() {
       try {
-        // Chargement direct de prices.json à la racine avec horodatage anti-cache
         const response = await fetch('prices.json?t=' + Date.now());
         if (!response.ok) throw new Error("Fichier introuvable");
         const data = await response.json();
 
         allCards = (data.cards || []).map(card => {
-          const rawName = card.name || card.n || "Joueur inconnu";
-          const rawPrice = card.price || card.p || 0;
-          const price = Number(rawPrice) || 0;
-          const buyPrice = Math.round(price * 0.95);
-          const sellPrice = Math.round(price * 1.05);
+          const price = Number(card.price) || 0;
+          // Algorithme d'achat-revente pro
+          const buyPrice = Math.round(price * 0.94); // -6% pour achat cible
+          const sellPrice = Math.round(price * 1.06); // +6% pour revente
           const tax = Math.round(sellPrice * 0.05);
           const profit = sellPrice - tax - buyPrice;
 
           return {
             id: card.id,
-            name: rawName,
+            name: card.name,
+            rating: card.rating || 83,
             price: price,
+            change: Number(card.change) || 0,
+            tech: card.tech || 'Flip',
             buyPrice: buyPrice,
             sellPrice: sellPrice,
             tax: tax,
             profit: profit,
-            change: Number(card.change) || 0,
             img: card.img || `https://cdn.futbin.com/content/fut27/img/players/p${card.id}.png`,
             history: card.history || [price, price]
           };
-        }).filter(c => c.price > 0);
+        });
 
         if (data.updated) {
           const date = new Date(data.updated);
-          document.getElementById('last-updated').innerText = `Dernière mise à jour : ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR')}`;
+          document.getElementById('last-updated').innerText = `Dernière synchro : ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR')}`;
         }
 
         renderTable();
       } catch (err) {
         document.getElementById('player-table-body').innerHTML = `
-          <tr><td colspan="7" class="px-4 py-8 text-center text-red-400">
-            Erreur lors du chargement de <code>prices.json</code>.
+          <tr><td colspan="8" class="px-6 py-12 text-center text-rose-400">
+            Impossible de charger <code>prices.json</code>. Vérifiez que le fichier est bien présent.
           </td></tr>`;
       }
     }
 
     function generateSparkline(history, change) {
-      if (!history || history.length < 2) {
-        const color = change >= 0 ? '#10b981' : '#f43f5e';
-        return `<svg class="w-20 h-6" viewBox="0 0 100 30"><line x1="0" y1="15" x2="100" y2="15" stroke="${color}" stroke-width="2" stroke-dasharray="3 3"/></svg>`;
-      }
-
+      if (!history || history.length < 2) return '';
       const min = Math.min(...history);
       const max = Math.max(...history);
       const range = (max - min) || 1;
       
       const points = history.map((val, idx) => {
-        const x = (idx / (history.length - 1)) * 100;
-        const y = 26 - ((val - min) / range) * 22;
+        const x = (idx / (history.length - 1)) * 90 + 5;
+        const y = 24 - ((val - min) / range) * 18;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       }).join(' ');
 
-      const strokeColor = change >= 0 ? '#10b981' : '#f43f5e';
+      const color = change >= 0 ? '#10b981' : '#f43f5e';
       return `
-        <svg class="w-20 h-7 overflow-visible" viewBox="0 0 100 30">
-          <polyline fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+        <svg class="w-24 h-7 overflow-visible" viewBox="0 0 100 30">
+          <polyline fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
         </svg>
       `;
     }
@@ -195,37 +185,18 @@
         currentSort.column = column;
         currentSort.dir = column === 'name' ? 'asc' : 'desc';
       }
-      updateSortIcons();
       renderTable();
-    }
-
-    function updateSortIcons() {
-      const columns = ['name', 'price', 'change', 'buyPrice', 'sellPrice', 'profit'];
-      columns.forEach(col => {
-        const el = document.getElementById(`sort-icon-${col}`);
-        if (!el) return;
-        if (currentSort.column === col) {
-          el.innerText = currentSort.dir === 'asc' ? ' ▲' : ' ▼';
-          el.className = 'text-indigo-400 text-xs ml-1 font-bold';
-        } else {
-          el.innerText = ' ⇅';
-          el.className = 'text-slate-600 text-xs ml-1';
-        }
-      });
     }
 
     function renderTable() {
       const search = document.getElementById('search-input').value.toLowerCase();
-      const budget = document.getElementById('budget-filter').value;
+      const techFilter = document.getElementById('tech-filter').value;
       const tbody = document.getElementById('player-table-body');
 
       let filtered = allCards.filter(card => {
         const matchesSearch = card.name.toLowerCase().includes(search);
-        let matchesBudget = true;
-        if (budget === 'under10k') matchesBudget = card.price < 10000;
-        else if (budget === '10k-50k') matchesBudget = card.price >= 10000 && card.price <= 50000;
-        else if (budget === 'over50k') matchesBudget = card.price > 50000;
-        return matchesSearch && matchesBudget;
+        const matchesTech = techFilter === 'all' || card.tech === techFilter;
+        return matchesSearch && matchesTech;
       });
 
       const col = currentSort.column;
@@ -236,7 +207,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Aucun joueur ne correspond.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-12 text-center text-slate-500">Aucun joueur trouvé.</td></tr>`;
         return;
       }
 
@@ -247,52 +218,58 @@
         totalPrices += card.price;
         totalProfits += card.profit;
 
-        const sparklineSvg = generateSparkline(card.history, card.change);
+        const sparkline = generateSparkline(card.history, card.change);
+        const techBadgeClass = card.tech === 'Flip' 
+          ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+          : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
 
         return `
-          <tr class="hover:bg-slate-800/40 transition-colors">
-            <td class="px-4 py-2 font-medium text-slate-200">
+          <tr class="hover:bg-dark-800/40 transition-colors group">
+            <td class="px-6 py-3.5 font-medium text-white">
               <div class="flex items-center gap-3">
-                <div class="relative w-10 h-12 flex-shrink-0 flex items-center justify-center bg-slate-800/30 rounded border border-slate-800/50 overflow-hidden">
-                  <img 
-                    src="${card.img}" 
-                    alt="${card.name}" 
-                    class="w-10 h-12 object-contain transition-transform duration-200 ease-out hover:scale-150 hover:z-50 transform-gpu cursor-pointer drop-shadow-md"
-                    loading="lazy"
-                    onerror="handleImageError(this, '${card.id}')"
-                  />
+                <div class="w-9 h-11 flex-shrink-0 bg-dark-800 rounded-lg border border-dark-700 overflow-hidden flex items-center justify-center">
+                  <img src="${card.img}" alt="${card.name}" class="w-8 h-10 object-contain group-hover:scale-110 transition-transform duration-200" loading="lazy" onerror="this.src='https://cdn.futbin.com/content/fut27/players/${card.id}.png'"/>
                 </div>
-                <span class="font-semibold text-slate-100 whitespace-nowrap">${card.name}</span>
+                <div>
+                  <span class="font-bold text-slate-100 block">${card.name}</span>
+                  <span class="text-xs text-slate-400">Note : ${card.rating}</span>
+                </div>
               </div>
             </td>
-            <td class="px-4 py-3 font-semibold text-slate-100">${card.price.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3">
+            <td class="px-6 py-3.5">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold border ${techBadgeClass}">
+                ${card.tech}
+              </span>
+            </td>
+            <td class="px-6 py-3.5 font-semibold text-slate-200">${card.price.toLocaleString('fr-FR')} cr</td>
+            <td class="px-6 py-3.5">
               <div class="flex items-center gap-2">
-                ${sparklineSvg}
-                <span class="text-xs font-semibold ${card.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                ${sparkline}
+                <span class="text-xs font-bold ${card.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
                   ${card.change >= 0 ? '+' : ''}${card.change.toFixed(1)}%
                 </span>
               </div>
             </td>
-            <td class="px-4 py-3 text-indigo-400">${card.buyPrice.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 text-slate-300">${card.sellPrice.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 text-rose-400/80">-${card.tax.toLocaleString('fr-FR')} cr</td>
-            <td class="px-4 py-3 font-bold ${card.profit > 0 ? 'text-emerald-400' : 'text-slate-500'}">
+            <td class="px-6 py-3.5 font-bold text-indigo-400">${card.buyPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-6 py-3.5 text-slate-300">${card.sellPrice.toLocaleString('fr-FR')} cr</td>
+            <td class="px-6 py-3.5 text-rose-400/80">-${card.tax.toLocaleString('fr-FR')} cr</td>
+            <td class="px-6 py-3.5 font-extrabold ${card.profit > 0 ? 'text-emerald-400' : 'text-slate-500'}">
               +${card.profit.toLocaleString('fr-FR')} cr
             </td>
           </tr>
         `;
       }).join('');
 
-      document.getElementById('total-cards').innerText = filtered.length;
-      document.getElementById('avg-price').innerText = `${Math.round(totalPrices / filtered.length).toLocaleString('fr-FR')} cr`;
-      document.getElementById('avg-profit').innerText = `+${Math.round(totalProfits / filtered.length).toLocaleString('fr-FR')} cr`;
+      document.getElementById('stat-cards').innerText = filtered.length;
+      document.getElementById('stat-avg-price').innerText = `${Math.round(totalPrices / filtered.length).toLocaleString('fr-FR')} cr`;
+      document.getElementById('stat-avg-profit').innerText = `+${Math.round(totalProfits / filtered.length).toLocaleString('fr-FR')} cr`;
     }
 
     document.getElementById('search-input').addEventListener('input', renderTable);
-    document.getElementById('budget-filter').addEventListener('change', renderTable);
+    document.getElementById('tech-filter').addEventListener('change', renderTable);
 
     loadPrices();
+    // Actualisation automatique toutes les 20 secondes comme demandé
     setInterval(loadPrices, 20000);
   </script>
 </body>
